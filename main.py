@@ -55,6 +55,7 @@ def run(offload: Optional[str] = None) -> float:
         def offload_process1(data):
             nonlocal data1
             # TODO: Send a POST request to the server with the input data
+            response = requests.post(f'{offload_url}/process1', json=data)
             data1 = response.json()
         thread = threading.Thread(target=offload_process1, args=(data,))
         thread.start()
@@ -67,9 +68,39 @@ def run(offload: Optional[str] = None) -> float:
         #   Make sure to cite any sources you use to answer this question.
     elif offload == 'process2':
         # TODO: Implement this case
+        data2 = None
+        def offload_process2(data):
+            nonlocal data2
+            # TODO: Send a POST request to the server with the input data
+            response = requests.post(f'{offload_url}/process2', json=data)
+            data2 = response.json()
+        thread = threading.Thread(target=offload_process2, args=(data,))
+        thread.start()
+        data1 = process1(data)
+        thread.join()
         pass
     elif offload == 'both':
         # TODO: Implement this case
+        data1 = None
+        def offload_process1(data):
+            nonlocal data1
+            # TODO: Send a POST request to the server with the input data
+            response = requests.post(f'{offload_url}/process1', json=data)
+            data1 = response.json()
+        thread = threading.Thread(target=offload_process1, args=(data,))
+        thread.start()
+        data2 = process2(data)
+        thread.join()
+        data2 = None
+        def offload_process2(data):
+            nonlocal data2
+            # TODO: Send a POST request to the server with the input data
+            response = requests.post(f'{offload_url}/process2', json=data)
+            data2 = response.json()
+        thread = threading.Thread(target=offload_process2, args=(data,))
+        thread.start()
+        data1 = process1(data)
+        thread.join()
         pass
 
     ans = final_process(data1, data2)
@@ -79,15 +110,31 @@ def main():
     # TODO: Run the program 5 times for each offloading mode, and record the total execution time
     #   Compute the mean and standard deviation of the execution times
     #   Hint: store the results in a pandas DataFrame, use previous labs as a reference
+    modes = [none, process1, process2, both]
+    data = []
+    for mode in modes:
+        times = []
+        for i in range(5):
+            start = time.time()
+            run (mode)
+            end = time.time()
+            times.append (end-start)
+        mean = np.mean(times)
+        std = np,.std(times)
+        data.append(mode, mean, std)
+
+    df = pd.DataFrame(data, columns=['mode', 'mean', 'std'])
+    print(df)
 
 
     # TODO: Plot makespans (total execution time) as a bar chart with error bars
     # Make sure to include a title and x and y labels
-
+    fig = px.bar(df, x='mode', y='mean', error_y='std', color='mode', title='Execution Time By Offloading Mode',xaxis_title='Offloading Mode', yaxis_title='Execution Time (seconds)')
+                
 
     # TODO: save plot to "makespan.png"
 
-
+    fig.write_image('makespan.png')
     # Question 4: What is the best offloading mode? Why do you think that is?
     # Question 5: What is the worst offloading mode? Why do you think that is?
     # Question 6: The processing functions in the example aren't very likely to be used in a real-world application. 

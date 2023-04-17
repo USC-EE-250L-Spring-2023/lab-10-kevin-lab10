@@ -22,3 +22,6 @@ def process2_app_route():
     data = request.get_json()
     res = jsonify(process2(data))
     return res
+
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
